@@ -1,0 +1,27 @@
+{
+  "name": "bc-lumberjack",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/baltimorecounty/lumberjack.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/baltimorecounty/lumberjack/issues"
+  },
+  "homepage": "https://github.com/baltimorecounty/lumberjack#readme",
+  "devDependencies": {
+    "fs": "0.0.1-security",
+    "moment": "^2.18.1",
+    "restify": "^5.0.1",
+    "restify-cors-middleware": "^1.0.1",
+    "restify-plugins": "^1.6.0"
+  }
+}

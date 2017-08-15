@@ -17,34 +17,38 @@ function getFullLogPath() {
     return logPath + fileName;
 }
 
-function writeFile(filePath, logs, next) {
-    var data = logs || '[]';
-    fs.writeFile(filePath, data, 'utf8', function () {
-        console.log('writing file at: ' + filePath);
-        if (next && typeof next === 'function') {
-            return next();
+function createFile(filePath, callback) {
+    fs.writeFile(filePath, '', 'utf8', function () {
+        if (callback && typeof callback === 'function') {
+            callback();
         }
     });
 }
 
-function processLogs(logData, next) {
+function writeFile(filePath, logs, callback) {
+    var data = logs || '[]';
+    fs.writeFile(filePath, data, 'utf8', function () {
+        if (callback && typeof callback === 'function') {
+            return callback();
+        }
+    });
+}
+
+function processLogs(logData, callback) {
     var filePath = getFullLogPath();
 
     fs.readFile(filePath, 'utf8', function readFileCallback(err, data) {
         if (err) {
-            //Else file probably doesn't exist, create it
-            writeFile(filePath);
-            processLogs(logData); //TODO: THIS NEEDS TO BE FIXED
+            createFile(filePath, function() {
+                processLogs(logData, callback);
+            });
         } else {
-            var logs = JSON.parse(data);
+            var logs = data ? JSON.parse(data) : [];
+
             logs.push(logData);
 
-            console.log('logs', logs)
-            console.log('logData', logData);
-
-            writeFile(filePath, JSON.stringify(logs), next);
+            writeFile(filePath, JSON.stringify(logs), callback);
         }
-
     });
 }
 
@@ -64,12 +68,12 @@ function Log() {
 
 }
 
-Log.prototype.Save = function Save(next) {
-    processLogs(this, next);
+Log.prototype.Save = function Save(callback) {
+    processLogs(this, callback);
 }
 
 
-function createLog(data, next) {
+function createLog(data, callback) {
     var log = new Log();
 
     log.appName = data.appName;
@@ -79,9 +83,7 @@ function createLog(data, next) {
     log.otherData = JSON.parse(data.otherData);
     log.browserData = JSON.parse(data.browserData);
 
-    //console.log('mylog', log);
-
-    log.Save(next);
+    log.Save(callback);
 }
 
 var server = restify.createServer();
@@ -117,7 +119,10 @@ server.get('/logs', function (req, res, next) {
 
 })
 server.post('/logs', function (req, res, next) {
-    createLog(req.body, next);
+    createLog(req.body, function() {
+        res.send(201); //Record Created
+        return next();
+    });
 }, function () {});
 
 server.listen(8080, function () {

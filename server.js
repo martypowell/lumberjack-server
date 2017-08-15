@@ -35,8 +35,7 @@ function processLogs(logData, next) {
             //Else file probably doesn't exist, create it
             writeFile(filePath);
             processLogs(logData); //TODO: THIS NEEDS TO BE FIXED
-        }
-        else {
+        } else {
             var logs = JSON.parse(data);
             logs.push(logData);
 
@@ -99,7 +98,12 @@ server.use(restify.plugins.bodyParser());
 // });
 
 var cors = corsMiddleware({
-  origins: ['http://localhost:8000', 'http://localhost:8080', 'http://172.28.1.116:8081']
+    origins: [
+        'http://localhost:8000',
+        'http://localhost:8080',
+        'http://172.28.1.116:8081',
+        'http://192.168.0.44:8081'
+    ]
 });
 
 server.pre(cors.preflight)
@@ -114,10 +118,9 @@ server.get('/logs', function (req, res, next) {
 })
 server.post('/logs', function (req, res, next) {
     createLog(req.body, next);
-}, function () {
-});
+}, function () {});
 
 server.listen(8080, function () {
-    
+
     console.log('%s listening at %s', server.name, server.url);
 });

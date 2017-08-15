@@ -1,10 +1,25 @@
 var restify = require('restify');
 var fs = require('fs');
+var jsonfile = require('jsonfile');
 var moment = require('moment');
 var corsMiddleware = require('restify-cors-middleware');
+var winston = require('winston');
+var readline = require('readline');
 
 var logPath = './logs/'
-var logName = 'lumberjack.json';
+var logName = 'lumberjack.log';
+
+/**
+ * Winston Configruation
+ */
+var logger = new (winston.Logger)({
+    transports: [
+        new winston.transports.File({ filename: getFullLogPath() })
+    ],
+    exceptionHandlers: [
+        new winston.transports.File({ filename: logPath + 'error.log' })
+    ]
+});
 
 function getFileName() {
     var dateStr = moment().format('YYYYMMDD');
@@ -17,50 +32,24 @@ function getFullLogPath() {
     return logPath + fileName;
 }
 
-function createFile(filePath, callback) {
-    fs.writeFile(filePath, '', 'utf8', function () {
-        if (callback && typeof callback === 'function') {
-            callback();
-        }
-    });
-}
-
-function writeFile(filePath, logs, callback) {
-    var data = logs || '[]';
-    fs.writeFile(filePath, data, 'utf8', function () {
-        if (callback && typeof callback === 'function') {
-            return callback();
-        }
-    });
-}
-
 function processLogs(logData, callback) {
     var filePath = getFullLogPath();
-
-    fs.readFile(filePath, 'utf8', function readFileCallback(err, data) {
-        if (err) {
-            createFile(filePath, function() {
-                processLogs(logData, callback);
-            });
-        } else {
-            var logs = data ? JSON.parse(data) : [];
-
-            logs.push(logData);
-
-            writeFile(filePath, JSON.stringify(logs), callback);
-        }
+    logger.log('info', logData.message, logData, function() {
+        callback();
     });
 }
 
 //TODO: Add paging
 function getLogs(callback) {
-    var filePath = getFullLogPath(callback);
-    return fs.readFile(filePath, 'utf8', function readFileCallback(err, data) {
-        if (err) {
-            //TODO: Handle Error
-            return callback([]);
-        }
-        return callback(JSON.parse(data));
+    var filePath = getFullLogPath();
+    var dataArr = [];
+    readline.createInterface({
+        input: fs.createReadStream(filePath),
+        terminal: false
+    }).on('line', function (line) {
+       dataArr.push(JSON.parse(line)); 
+    }).on('close', function() {
+        return callback(dataArr);
     });
 }
 
@@ -89,22 +78,13 @@ function createLog(data, callback) {
 var server = restify.createServer();
 server.use(restify.plugins.bodyParser());
 
-// console.log('tset', restify.plugins.CORS);
-
-// server.opts(/.*/, function (req,res,next) {
-//     res.header("Access-Control-Allow-Origin", "*");
-//     res.header("Access-Control-Allow-Methods", req.header("Access-Control-Request-Method"));
-//     res.header("Access-Control-Allow-Headers", req.header("Access-Control-Request-Headers"));
-//     res.send(200);
-//     return next();
-// });
-
 var cors = corsMiddleware({
     origins: [
         'http://localhost:8000',
         'http://localhost:8080',
         'http://172.28.1.116:8081',
-        'http://192.168.0.44:8081'
+        'http://192.168.0.44:8081',
+        'http://172.28.1.116:8081'
     ]
 });
 
@@ -119,13 +99,12 @@ server.get('/logs', function (req, res, next) {
 
 })
 server.post('/logs', function (req, res, next) {
-    createLog(req.body, function() {
+    createLog(req.body, function () {
         res.send(201); //Record Created
         return next();
     });
-}, function () {});
+}, function () { });
 
 server.listen(8080, function () {
-
     console.log('%s listening at %s', server.name, server.url);
 });

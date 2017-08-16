@@ -21,14 +21,14 @@ var logger = new (winston.Logger)({
     ]
 });
 
-function getFileName() {
-    var dateStr = moment().format('YYYYMMDD');
+function getFileName(date) {
+    var dateStr = date || moment().format('YYYYMMDD');
     var logNameParts = logName.split('.');
     return logNameParts[0] + '-' + dateStr + '.' + logNameParts[1];
 }
 
-function getFullLogPath() {
-    var fileName = getFileName();
+function getFullLogPath(date) {
+    var fileName = getFileName(date);
     return logPath + fileName;
 }
 
@@ -40,8 +40,8 @@ function processLogs(logData, callback) {
 }
 
 //TODO: Add paging
-function getLogs(callback) {
-    var filePath = getFullLogPath();
+function getLogs(date, callback) {
+    var filePath = getFullLogPath(date);
     var dataArr = [];
     readline.createInterface({
         input: fs.createReadStream(filePath),
@@ -92,12 +92,25 @@ server.pre(cors.preflight)
 server.use(cors.actual)
 
 server.get('/logs', function (req, res, next) {
-    getLogs(function (log) {
+    var date = "";
+
+    getLogs(null, function (log) {
         res.send(200, log);
         return next();
     });
 
 })
+
+server.get('/logs/:date', function (req, res, next) {
+    var date = req.params.date;
+
+    getLogs(date, function (log) {
+        res.send(200, log);
+        return next();
+    });
+
+})
+
 server.post('/logs', function (req, res, next) {
     createLog(req.body, function () {
         res.send(201); //Record Created

@@ -10,7 +10,7 @@ var logPath = './logs/'
 var logName = 'lumberjack.log';
 
 /**
- * Winston Configruation
+ * Winston Configuration
  */
 var logger = new (winston.Logger)({
     transports: [

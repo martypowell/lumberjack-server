@@ -65,10 +65,8 @@ function Log(logHandler) {
         save(self.data, callback);
     }
     function save(log, callback) {
-        console.log(log, callback);
         self.logHandler.log('info', log.message, log, function () {
             if (callback && typeof callback === 'function') {
-                console.log('got here');
                 callback();
             }
         });

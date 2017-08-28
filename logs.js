@@ -1,3 +1,8 @@
+var restify = require('restify');
+var fs = require('fs');
+var moment = require('moment');
+var readline = require('readline');
+
 function Logs() {
     this.Get = function (options, callback) {
         var date = options.date || null;

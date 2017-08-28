@@ -116,7 +116,8 @@ var cors = corsMiddleware({
         'http://localhost:8000',
         'http://localhost:8080',
         'http://192.168.0.44:8080',
-        'http://192.168.0.44:8081'
+        'http://192.168.0.44:8081',
+        'http://172.28.1.116:8081'
     ]
 });
 

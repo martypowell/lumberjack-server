@@ -6,6 +6,9 @@ var corsMiddleware = require('restify-cors-middleware');
 var winston = require('winston');
 require('winston-mongodb').MongoDB;
 
+var MongoClient = require('mongodb').MongoClient;
+
+
 var readline = require('readline');
 
 var browserService = require('./browser-service.js');
@@ -33,9 +36,9 @@ function getFullLogPath(date) {
 
 var logger = new(winston.Logger)({
     transports: [
-        new winston.transports.File({
-            filename: getFullLogPath()
-        }),
+        // new winston.transports.File({
+        //     filename: getFullLogPath()
+        // }),
         new winston.transports.MongoDB({
             db: mongoConnectionString
         })
@@ -142,13 +145,37 @@ server.get(rootPath + '/logs?date=:date&browsers=:browsers', function (req, res,
     var date = req.query && req.query.hasOwnProperty('date') ? req.query.date : null;
     var browsers = req.query && req.query.hasOwnProperty('browsers') ? req.query.browsers : [];
 
-    new Logs().Get({
-        date: date,
-        browsers: browsers
-    }, function (log) {
-        res.send(200, log);
+
+    //
+    // Find items logged between today and yesterday.
+    //
+    var options = {
+        from: new Date - 24 * 60 * 60 * 1000,
+        until: new Date,
+        limit: 10,
+        start: 0,
+        order: 'desc'
+    };
+
+    logger.query(options, function (err, results) {
+        if (err) {
+            throw err;
+            res.send(500);
+            return next();
+        }
+
+        res.send(200, results);
         return next();
     });
+
+
+
+    // new Logs().Get({
+    //     date: date,
+    //     browsers: browsers
+    // }, function (log) {
+
+    // });
 
 })
 

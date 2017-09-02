@@ -2,7 +2,10 @@ var restify = require('restify');
 var fs = require('fs');
 var moment = require('moment');
 var corsMiddleware = require('restify-cors-middleware');
+
 var winston = require('winston');
+require('winston-mongodb').MongoDB;
+
 var readline = require('readline');
 
 var browserService = require('./browser-service.js');
@@ -11,6 +14,7 @@ var logPath = './logs/'
 var logName = 'lumberjack.log';
 var apiVersion = "1.0.0";
 var rootPath = '/api/' + apiVersion;
+var mongoConnectionString = 'mongodb://localhost:27017/lumberjack-dev';
 
 /**
  * Winston Configuration
@@ -31,6 +35,9 @@ var logger = new(winston.Logger)({
     transports: [
         new winston.transports.File({
             filename: getFullLogPath()
+        }),
+        new winston.transports.MongoDB({
+            db: mongoConnectionString
         })
     ],
     exceptionHandlers: [
@@ -56,14 +63,17 @@ function Log(logHandler) {
         self.data.dateCreated = new Date();
         self.data.type = log.type;
         self.data.message = log.message;
-        self.data.otherData = JSON.parse(log.otherData);
-        self.data.browserData = JSON.parse(log.browserData);
-        var browserInfo = browserService.getBrowserInfoFromUserAgent(self.data.browserData.userAgent, true).split(' ');
-        self.data.browserName = browserInfo[0];
-        self.data.browserVersion = browserInfo[1];
+        self.data.otherData = log.otherData;
+        self.data.browserData = log.browserData;
 
+        if (self.data.browserData && self.data.browserData.hasOwnProperty('userAgent')) {
+            var browserInfo = browserService.getBrowserInfoFromUserAgent(self.data.browserData.userAgent, true).split(' ');
+            self.data.browserName = browserInfo[0];
+            self.data.browserVersion = browserInfo[1];
+        }
         save(self.data, callback);
     }
+
     function save(log, callback) {
         self.logHandler.log('info', log.message, log, function () {
             if (callback && typeof callback === 'function') {
@@ -143,6 +153,12 @@ server.get(rootPath + '/logs?date=:date&browsers=:browsers', function (req, res,
 })
 
 server.post(rootPath + '/logs', function (req, res, next) {
+    //TODO: Fix this so it returns the proper http code
+    if (!req || !req.body) {
+        res.send(500);
+        return next();
+    }
+
     new Log(logger).Create(req.body, function () {
         res.send(201); //Record Created
         return next();

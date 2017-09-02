@@ -6,9 +6,6 @@ var corsMiddleware = require('restify-cors-middleware');
 var winston = require('winston');
 require('winston-mongodb').MongoDB;
 
-var MongoClient = require('mongodb').MongoClient;
-
-
 var readline = require('readline');
 
 var browserService = require('./browser-service.js');
@@ -19,10 +16,15 @@ var apiVersion = "1.0.0";
 var rootPath = '/api/' + apiVersion;
 var mongoConnectionString = 'mongodb://localhost:27017/lumberjack-dev';
 
+var config = require('./config.js').development;
+var mongoose = require('mongoose');
+var Log = require('./models/log.js');
+
+
+
 /**
  * Winston Configuration
  */
-
 function getFileName(date) {
     var dateStr = date || moment().format('YYYYMMDD');
     var logNameParts = logName.split('.');
@@ -51,71 +53,6 @@ var logger = new(winston.Logger)({
 });
 
 /**
- * 
- * @param {*} callback 
- */
-
-function Log(logHandler) {
-    var self = this;
-    self.path = getFullLogPath();
-    self.logHandler = logHandler;
-
-    self.Create = function (log, callback) {
-        self.data = {};
-        self.data.appName = log.appName;
-        self.data.dateCreated = new Date();
-        self.data.type = log.type;
-        self.data.message = log.message;
-        self.data.otherData = log.otherData;
-        self.data.browserData = log.browserData;
-
-        if (self.data.browserData && self.data.browserData.hasOwnProperty('userAgent')) {
-            var browserInfo = browserService.getBrowserInfoFromUserAgent(self.data.browserData.userAgent, true).split(' ');
-            self.data.browserName = browserInfo[0];
-            self.data.browserVersion = browserInfo[1];
-        }
-        save(self.data, callback);
-    }
-
-    function save(log, callback) {
-        self.logHandler.log('info', log.message, log, function () {
-            if (callback && typeof callback === 'function') {
-                callback();
-            }
-        });
-    };
-}
-
-/**
- * logs stuff
- */
-function Logs() {
-    this.Get = function (options, callback) {
-        var date = options.date || null;
-        var filePath = getFullLogPath(date);
-        var dataArr = [];
-
-        function onLine(line) {
-            dataArr.push(JSON.parse(line));
-        }
-
-        function onClose() {
-            return callback(dataArr);
-        }
-
-        readline.createInterface({
-                input: fs.createReadStream(filePath),
-                terminal: false
-            })
-            .on('line', onLine)
-            .on('close', onClose);
-    }
-    this.Filter = function () {
-        //TODO: implement
-    }
-}
-
-/**
  * Server Code
  */
 
@@ -141,56 +78,56 @@ server.use(cors.actual)
  * Routes
  */
 
-server.get(rootPath + '/logs?date=:date&browsers=:browsers', function (req, res, next) {
-    var date = req.query && req.query.hasOwnProperty('date') ? req.query.date : null;
-    var browsers = req.query && req.query.hasOwnProperty('browsers') ? req.query.browsers : [];
+mongoose.connect(config.dbConnectionStr, {
+    useMongoClient: true
+}, function (err, db) {
+    if (err) {
+        throw err;
+    }
 
 
-    //
-    // Find items logged between today and yesterday.
-    //
-    var options = {
-        from: new Date - 24 * 60 * 60 * 1000,
-        until: new Date,
-        limit: 10,
-        start: 0,
-        order: 'desc'
-    };
+    server.get(rootPath + '/logs?date=:date&browsers=:browsers', function (req, res, next) {
+        var date = req.query && req.query.hasOwnProperty('date') ? req.query.date : null;
+        var browsers = req.query && req.query.hasOwnProperty('browsers') ? req.query.browsers : [];
 
-    logger.query(options, function (err, results) {
-        if (err) {
-            throw err;
+        // get all the Logs
+        Log.find({}, function (err, logs) {
+            if (err) {
+                throw err;
+                res.send(500);
+                return next();
+            }
+
+            res.send(200, logs);
+            return next();
+        });
+
+    })
+
+    server.post(rootPath + '/logs', function (req, res, next) {
+        //TODO: Fix this so it returns the proper http code
+        if (!req || !req.body) {
             res.send(500);
             return next();
         }
 
-        res.send(200, results);
-        return next();
-    });
+        var log = new Log(req.body);
 
+        log.save(function (err) {
+            if (err) {
+                throw err;
+                res.send(500, err);
+                return next();
+            }
 
+            console.log('Log Created!');
+            res.send(200, log);
+            return next();
+        });
 
-    // new Logs().Get({
-    //     date: date,
-    //     browsers: browsers
-    // }, function (log) {
+    }, function () {});
 
-    // });
-
-})
-
-server.post(rootPath + '/logs', function (req, res, next) {
-    //TODO: Fix this so it returns the proper http code
-    if (!req || !req.body) {
-        res.send(500);
-        return next();
-    }
-
-    new Log(logger).Create(req.body, function () {
-        res.send(201); //Record Created
-        return next();
-    });
-}, function () {});
+});
 
 server.listen(8080, function () {
     console.log('%s listening at %s', server.name, server.url);

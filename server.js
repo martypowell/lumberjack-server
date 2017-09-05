@@ -1,56 +1,26 @@
+/**
+ * npm modules
+ */
 var restify = require('restify');
 var fs = require('fs');
 var moment = require('moment');
 var corsMiddleware = require('restify-cors-middleware');
-
-var winston = require('winston');
-require('winston-mongodb').MongoDB;
-
-var readline = require('readline');
-
-var browserService = require('./browser-service.js');
-
-var logPath = './logs/'
-var logName = 'lumberjack.log';
-var apiVersion = "1.0.0";
-var rootPath = '/api/' + apiVersion;
-var mongoConnectionString = 'mongodb://localhost:27017/lumberjack-dev';
-
-var config = require('./config.js').development;
 var mongoose = require('mongoose');
-var Log = require('./models/log.js');
-
-
 
 /**
- * Winston Configuration
+ * app specific modules
  */
-function getFileName(date) {
-    var dateStr = date || moment().format('YYYYMMDD');
-    var logNameParts = logName.split('.');
-    return logNameParts[0] + '-' + dateStr + '.' + logNameParts[1];
-}
+var config = require('./config.js').development;
+var browserService = require('./browser-service.js');
+var logger = require('.logger.js');
+var Log = require('./models/log.js');
 
-function getFullLogPath(date) {
-    var fileName = getFileName(date);
-    return logPath + fileName;
-}
-
-var logger = new(winston.Logger)({
-    transports: [
-        // new winston.transports.File({
-        //     filename: getFullLogPath()
-        // }),
-        new winston.transports.MongoDB({
-            db: mongoConnectionString
-        })
-    ],
-    exceptionHandlers: [
-        new winston.transports.File({
-            filename: logPath + 'error.log'
-        })
-    ]
-});
+/**
+ * app specific variables
+ */
+var apiVersion = "1.0.0";
+var rootPath = '/api/' + apiVersion;
+// var mongoConnectionString = 'mongodb://localhost:27017/lumberjack-dev';
 
 /**
  * Server Code

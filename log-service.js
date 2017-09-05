@@ -1,8 +1,11 @@
-let Log = require('./models/logs.js');
+let LogModel = require('./models/logs.js');
 
 const logService = () => {
     const get = (logParameters) => {
-        return Log.find(logParameters, function (err, logs) {
+        if (!logParameters) {
+            logParameters = {};
+        }
+        return LogModel.find(logParameters, function (err, logs) {
             if (err) {
                 return null;
             }

@@ -1,4 +1,5 @@
-module.exports = {
+const configuration = {
+    version: "1.0.0",
     development: {
         dbConnectionStr: "mongodb://localhost:27017/lumberjack-dev"
     },
@@ -6,3 +7,5 @@ module.exports = {
         dbConnectionStr: "mongodb://localhost:27017/lumberjack-dev"
     }
 };
+
+module.exports = configuration;

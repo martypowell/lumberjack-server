@@ -3,7 +3,7 @@ const constants = require('./server/api/constants.js');
 const logService = require('./service/log-service.js');
 const Log = require('./models/logs.js');
 
-const logsApi = () => {
+const logsApi = (server, constants, logService, Log => {
     const get = (request, response, next) => {
         const queryParameters = getLogQueryParameters(request);
 
@@ -60,7 +60,9 @@ const logsApi = () => {
         Get: get,
         Save: save
     }
-};
+})();
 
 server.get(constants.urls.get, logsApi.Get);
 server.get(constants.urls.save, logsApi.Save);
+
+module.exports = server;

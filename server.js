@@ -11,7 +11,7 @@ var mongoose = require('mongoose');
  * app specific modules
  */
 var config = require('./config.js').development;
-var browserService = require('./browser-service.js');
+var browserService = require('./services/browser-service.js');
 var logger = require('.logger.js');
 var Log = require('./models/log.js');
 

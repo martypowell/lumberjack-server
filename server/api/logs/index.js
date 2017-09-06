@@ -44,12 +44,19 @@ const logsApi = (server, constants, logService, Log => {
     };
 
     const handleResponse = (err, dataResponse, responseToSend) => {
-        if (err) {
-            responseToSend.send(500, err);
-        }
-        else {
-            responseToSend.send(200, dataResponse);
-        }
+        return new Promise((resolve, reject) => {
+            try {
+                if (err) {
+                    responseToSend.send(500, err);
+                }
+                else {
+                    responseToSend.send(200, dataResponse);
+                }
+            }
+            catch(ex) {
+                reject(ex);
+            }
+        });
     };
 
     const completeResponse = (next) => {
@@ -60,7 +67,7 @@ const logsApi = (server, constants, logService, Log => {
         Get: get,
         Save: save
     }
-})();
+}();
 
 server.get(constants.urls.get, logsApi.Get);
 server.get(constants.urls.save, logsApi.Save);

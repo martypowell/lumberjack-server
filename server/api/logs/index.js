@@ -53,7 +53,7 @@ const logsApi = (server, constants, logService, Log => {
                     responseToSend.send(200, dataResponse);
                 }
             }
-            catch(ex) {
+            catch (ex) {
                 reject(ex);
             }
         });
@@ -67,7 +67,7 @@ const logsApi = (server, constants, logService, Log => {
         Get: get,
         Save: save
     }
-}();
+})();
 
 server.get(constants.urls.get, logsApi.Get);
 server.get(constants.urls.save, logsApi.Save);

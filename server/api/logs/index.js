@@ -69,6 +69,9 @@ const completeResponse = (next) => {
     return next();
 }
 
+/**
+ * Routes
+ */
 server.get(constants.urls.get, Get);
 server.get(constants.urls.save, Save);
 

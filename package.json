@@ -19,6 +19,7 @@
   "homepage": "https://github.com/baltimorecounty/lumberjack#readme",
   "devDependencies": {
     "fs": "0.0.1-security",
+    "hapi": "^16.6.0",
     "jsonfile": "^3.0.1",
     "moment": "^2.18.1",
     "mongo": "^0.1.0",

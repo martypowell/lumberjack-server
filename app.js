@@ -3,9 +3,13 @@ const server = new Hapi.Server();
 const db = require('./data-access').db;
 const routes = require('./routes');
 
+// set the port of our application
+// process.env.PORT lets the port be set by Heroku
+var port = process.env.PORT || 8080;
+
 server.connection({
     host: 'localhost',
-    port: 4000
+    port: port
 });
 
 // localhost:4000

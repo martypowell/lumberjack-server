@@ -1,29 +1,18 @@
-/**
- * npm modules
- */
-var mongoose = require('mongoose');
-var server = require('./server');
+const Hapi = require('hapi');
+const server = new Hapi.Server();
+const db = require('./data-access').db;
+const routes = require('./routes');
 
+server.connection({
+    host: 'localhost',
+    port: 4000
+});
 
-
-
-
-
-
-/**
- * Routes
- */
-
-mongoose.connect(config.dbConnectionStr, {
-    useMongoClient: true
-}, function (err, db) {
+// localhost:4000
+server.route(routes);
+server.start((err) => {
     if (err) {
         throw err;
     }
-
-
-}, function () { });
-
-server.listen(8080, function () {
-    console.log('%s listening at %s', server.name, server.url);
+    console.log(`Server running at: ${server.info.uri}`);
 });

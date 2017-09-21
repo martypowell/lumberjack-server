@@ -8,7 +8,7 @@ const routes = require('./routes');
 var port = process.env.PORT || 8080;
 
 server.connection({
-    host: 'localhost',
+    host: '0.0.0.0',
     port: port
 });
 

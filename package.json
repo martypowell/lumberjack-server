@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/baltimorecounty/lumberjack#readme",
   "dependencies": {
+    "bcrypt": "^1.0.3",
     "boom": "^5.2.0",
     "fs": "0.0.1-security",
     "glob": "^7.1.2",

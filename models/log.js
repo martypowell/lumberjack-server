@@ -1,4 +1,4 @@
 var mongoose = require('mongoose');
-var logSchema = require('../schemas/log.js');
+var logSchema = require('../schemas/db/log.js');
 
 module.exports = mongoose.model('Log', logSchema);

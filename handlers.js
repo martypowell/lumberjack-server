@@ -14,6 +14,11 @@ function saveLogs(request, reply) {
 }
 
 function createUser(request, reply) {
+	if (request.pre.isUserAvailable === false) {
+		var resStr = 'Email address has already been registered, please contact support if you own this email address.';
+		reply(Boom.badRequest(resStr));
+		return;
+	}
 	let email = request.payload.email;
 	let password = request.payload.password;
 	userService.createUser(email, password)
@@ -33,8 +38,13 @@ function issueUserToken(request, reply) {
 
 function verifyUniqueUser(request, reply) {
 	let email = request.payload.email;
-	let isUnique = userService.verifyUniqueUser(email);
-	reply(isUnique);
+	userService.verifyUniqueUser(email)
+		.then((isAvailable) => {
+			reply(isAvailable);
+		})
+		.catch((err) => {
+			reply(Boom.badRequest(err));
+		});
 }
 
 function verifyCredentials(request, reply) {

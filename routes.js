@@ -26,7 +26,8 @@ let routes = [
 		path: '/users',
 		config: {
 			pre: [{
-				method: handlers.users.verifyUniqueUser
+				method: handlers.users.verifyUniqueUser,
+				assign: 'isUserAvailable'
 			}],
 			handler: handlers.users.create,
 			validate: {

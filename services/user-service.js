@@ -44,20 +44,24 @@ function hashPassword(password, cb) {
 }
 
 function verifyUniqueUser(email) {
-	// Find an entry from the database that
-	// matches either the email or username
-	User.findOne({ email: email },
-		(err, user) => {
+	return new Promise((resolve, reject) => {
+		// Find an entry from the database that
+	    // matches either the email or username
+		return User.findOne({ email: email }, (err, user) => {
+			if (err) {
+				return reject(err);
+			}
 			// Check whether the email
 			// is already taken and error out if so
 			if (user && user.email === email) {
-				return false;
+				return resolve(false);
 			}
 			// If everything checks out, send the payload through
 			// to the route handler
-			return true;
+			return resolve(true);
 		}
-	);
+		);
+	});
 }
 
 function verifyCredentials(email, password) {

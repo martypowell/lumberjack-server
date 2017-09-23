@@ -1,4 +1,6 @@
 const handlers = require('./handlers.js');
+const createUserSchema = require('./schemas/validation/createUser');
+const authenticateUserSchema = require('./schemas/validation/authenticateUser');
 
 function rootRoute(request, reply) {
 	reply('Hapi World!');
@@ -18,6 +20,34 @@ let routes = [
 		method: 'POST',
 		path: '/logs',
 		handler: handlers.logs.save
+	},
+	{
+		method: 'POST',
+		path: '/users',
+		config: {
+			pre: [{
+				method: handlers.users.verifyUniqueUser
+			}],
+			hander: handlers.users.create,
+			validate: {
+				payload: createUserSchema
+			}
+		}
+	},
+	{
+		method: 'POST',
+		path: '/users/authenticate',
+		config: {
+			pre: [{
+				method: handlers.users.verifyCredentials,
+				assign: 'user'
+			}],
+			// this handler will only be used if the pre condtions pass (aka credentials are verified)
+			handler: handlers.users.issueUserToken,
+			validate: {
+				payload: authenticateUserSchema
+			}
+		}
 	}
 ];
 

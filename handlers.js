@@ -1,4 +1,5 @@
-var logService = require('./services/log-service.js');
+var logService = require('./services/log-service');
+var userService = require('./services/user-service');
 
 function getLogs(request, reply) {
 	let params = {};
@@ -11,11 +12,45 @@ function saveLogs(request, reply) {
 	reply(log);
 }
 
+function createUser(request, reply) {
+	let email = request.payload.email;
+	let password = request.payload.password;
+	let result = userService.createUser(email, password);
+	reply(result);
+}
+
+function issueUserToken(request, reply) {
+	let email = request.payload.email;
+	let userToken = userService.issueUserToken(email);
+	reply(userToken);
+}
+
+function verifyUniqueUser(request, reply) {
+	let email = request.payload.email;
+	let isUnique = userService.verifyUniqueUser(email);
+	reply(isUnique);
+}
+
+function verifyCredentials(request, reply) {
+	let email = request.payload.email;
+	let password = request.payload.password;
+	let isAuthenticated = userService.verifyCredentials(email, password);
+	reply(isAuthenticated);
+}
+
 var logs = {
 	get: getLogs,
 	save: saveLogs
 };
 
+var users = {
+	create: createUser,
+	issueUserToken: issueUserToken,
+	verifyCredentials: verifyCredentials,
+	verifyUniqueUser: verifyUniqueUser
+};
+
 module.exports = {
-	logs: logs
+	logs: logs,
+	users: users
 };

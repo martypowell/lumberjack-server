@@ -15,7 +15,7 @@ function createToken(user) {
 	return jwt.sign(
 		{
 			id: user._id, // eslint-disable-line no-underscore-dangle
-			username: user.username,
+			email: user.email,
 			scope: scopes
 		},
 		secret,
@@ -26,6 +26,8 @@ function createToken(user) {
 	);
 }
 
-module.exports = {
+var tokenService = {
 	createToken: createToken
 };
+
+module.exports = tokenService;

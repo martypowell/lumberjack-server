@@ -1,5 +1,6 @@
 var logService = require('./services/log-service');
 var userService = require('./services/user-service');
+const Boom = require('boom');
 
 function getLogs(request, reply) {
 	let params = {};
@@ -15,8 +16,13 @@ function saveLogs(request, reply) {
 function createUser(request, reply) {
 	let email = request.payload.email;
 	let password = request.payload.password;
-	let result = userService.createUser(email, password);
-	reply(result);
+	userService.createUser(email, password)
+		.then((user) => {
+			reply(user);
+		})
+		.catch((err) => {
+			reply(Boom.badRequest(err));
+		});
 }
 
 function issueUserToken(request, reply) {

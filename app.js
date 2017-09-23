@@ -9,24 +9,24 @@ const secret = require('./config').secret;
 var port = process.env.PORT || 8080;
 
 server.connection({
-    host: '0.0.0.0',
-    port: port
+	host: '0.0.0.0',
+	port: port
 });
 
 server.register(require('hapi-auth-jwt'), (err) => {
-    // We're giving the strategy both a name
-    // and scheme of 'jwt'
-    server.auth.strategy('jwt', 'jwt', {
-        key: secret,
-        verifyOptions: { algorithms: ['HS256'] }
-    });
+	// We're giving the strategy both a name
+	// and scheme of 'jwt'
+	server.auth.strategy('jwt', 'jwt', {
+		key: secret,
+		verifyOptions: { algorithms: ['HS256'] }
+	});
 });
 
 // localhost:4000
 server.route(routes);
 server.start((err) => {
-    if (err) {
-        throw err;
-    }
-    console.log(`Server running at: ${server.info.uri}`);
+	if (err) {
+		throw err;
+	}
+	console.log(`Server running at: ${server.info.uri}`);
 });

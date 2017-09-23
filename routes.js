@@ -28,7 +28,7 @@ let routes = [
 			pre: [{
 				method: handlers.users.verifyUniqueUser
 			}],
-			hander: handlers.users.create,
+			handler: handlers.users.create,
 			validate: {
 				payload: createUserSchema
 			}

@@ -2,30 +2,34 @@
 
 const bcrypt = require('bcrypt');
 const Boom = require('boom');
-const User = require('../model/user');
+const User = require('../models/user');
 const createToken = require('./token-service').createToken;
 
 function issueUserToken(email) {
-	return { id_token: createToken(email) };
+	let user = new User();
+	user.email = email;
+	return { id_token: createToken(user) };
 }
 
 function createUser(email, password) {
-	let user = new User();
-	user.email = email;
-	user.admin = false;
+	return new Promise((resolve, reject) => {
+		let user = new User();
+		user.email = email;
+		user.admin = false;
 
-	hashPassword(password, (err, hash) => {
-		if (err) {
-			throw Boom.badRequest(err);
-		}
-		user.password = hash;
-		user.save((saveErr, savedUser) => {
+		return hashPassword(password, (err, hash) => {
 			if (err) {
-				throw Boom.badRequest(saveErr);
+				return reject(err);
 			}
-			// If the user is saved successfully, issue a JWT
-			// res({ id_token: createToken(user) }).code(201);
-			return { id_token: createToken(savedUser) };
+			user.password = hash;
+			return user.save((saveErr, savedUser) => {
+				if (saveErr) {
+					return reject(saveErr);
+				}
+				// If the user is saved successfully, issue a JWT
+				// res({ id_token: createToken(user) }).code(201);
+				return resolve({ id_token: createToken(savedUser) });
+			});
 		});
 	});
 }

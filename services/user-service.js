@@ -70,6 +70,7 @@ function verifyCredentials(email, password) {
 				}
 				return Boom.badRequest('Username or password is invalid');
 			});
+			return Boom.badRequest('Unknown issue has occured. Please contact support.');
 		}
 	);
 }

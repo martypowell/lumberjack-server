@@ -19,12 +19,12 @@ function createUser(request, reply) {
 		reply(Boom.badRequest(resStr));
 		return;
 	}
+
 	let email = request.payload.email;
 	let password = request.payload.password;
+
 	userService.createUser(email, password)
-		.then((user) => {
-			reply(user);
-		})
+		.then(reply)
 		.catch((err) => {
 			reply(Boom.badRequest(err));
 		});

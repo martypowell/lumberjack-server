@@ -50,8 +50,11 @@ function verifyUniqueUser(request, reply) {
 function verifyCredentials(request, reply) {
 	let email = request.payload.email;
 	let password = request.payload.password;
-	let isAuthenticated = userService.verifyCredentials(email, password);
-	reply(isAuthenticated);
+	userService.verifyCredentials(email, password)
+		.then(reply)
+		.catch((err) => {
+			reply(Boom.badRequest(err));
+		});
 }
 
 var logs = {

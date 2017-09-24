@@ -1,7 +1,6 @@
 'use strict';
 
 const bcrypt = require('bcrypt');
-const Boom = require('boom');
 const User = require('../models/user');
 const createToken = require('./token-service').createToken;
 
@@ -46,7 +45,7 @@ function hashPassword(password, cb) {
 function verifyUniqueUser(email) {
 	return new Promise((resolve, reject) => {
 		// Find an entry from the database that
-	    // matches either the email or username
+		// matches either the email or username
 		return User.findOne({ email: email }, (err, user) => {
 			if (err) {
 				return reject(err);
@@ -59,28 +58,39 @@ function verifyUniqueUser(email) {
 			// If everything checks out, send the payload through
 			// to the route handler
 			return resolve(true);
-		}
-		);
+		});
 	});
 }
 
 function verifyCredentials(email, password) {
-	// Find an entry from the database that
-	// matches either the email or username
-	User.findOne({ email: email },
-		(dbErr, user) => {
-			if (!user) {
-				return Boom.badRequest('Username or password is invalid');
+	return new Promise((resolve, reject) => {
+		// Find an entry from the database that
+		// matches either the email or username
+		User.findOne({ email: email }, (dbErr, user) => {
+			if (dbErr) {
+				reject(dbErr);
+				return;
 			}
+
+			if (!user) {
+				resolve('Username or password is invalid');
+				return;
+			}
+
 			bcrypt.compare(password, user.password, (bcryptErr, isValid) => {
-				if (isValid) {
-					return user;
+				if (bcryptErr) {
+					reject(bcryptErr);
+					return;
 				}
-				return Boom.badRequest('Username or password is invalid');
+				if (isValid) {
+					resolve(user);
+					return;
+				}
+				resolve('Username or password is invalid');
 			});
-			return Boom.badRequest('Unknown issue has occured. Please contact support.');
-		}
-	);
+			resolve('Something went wrong, please contact support');
+		});
+	});
 }
 
 let userService = {
@@ -92,4 +102,3 @@ let userService = {
 };
 
 module.exports = userService;
-

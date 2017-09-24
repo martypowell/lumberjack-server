@@ -26,8 +26,13 @@ function createToken(user) {
 	);
 }
 
+function issueToken(user) {
+	return { id_token: createToken(user) };
+}
+
 var tokenService = {
-	createToken: createToken
+	createToken: createToken,
+	issueToken: issueToken
 };
 
 module.exports = tokenService;

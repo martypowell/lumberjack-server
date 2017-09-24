@@ -1,6 +1,6 @@
 var dbConnectionStr = process.env.MONGODB_URI || 'mongodb://localhost:27017/lumberjack-dev';
 const configuration = {
-	secret: 'pH+cu_a!R7cakuhajeHezufr3cU',
+	secret: 'pH+cu_a!R7caku',
 	version: '1.0.0',
 	development: {
 		dbConnectionStr: dbConnectionStr

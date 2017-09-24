@@ -11,7 +11,8 @@ let routes = [
 		method: 'GET',
 		path: '/',
 		handler: rootRoute
-	}, {
+	},
+	{
 		method: 'GET',
 		path: '/logs',
 		handler: handlers.logs.get
@@ -22,13 +23,26 @@ let routes = [
 		handler: handlers.logs.save
 	},
 	{
+		method: 'GET',
+		path: '/users',
+		config: {
+			handler: handlers.users.get,
+			auth: {
+				strategy: 'jwt',
+				scope: ['admin']
+			}
+		}
+	},
+	{
 		method: 'POST',
 		path: '/users',
 		config: {
-			pre: [{
-				method: handlers.users.verifyUniqueUser,
-				assign: 'isUserAvailable'
-			}],
+			pre: [
+				{
+					method: handlers.users.verifyUniqueUser,
+					assign: 'isUserAvailable'
+				}
+			],
 			handler: handlers.users.create,
 			validate: {
 				payload: createUserSchema
@@ -39,10 +53,12 @@ let routes = [
 		method: 'POST',
 		path: '/users/authenticate',
 		config: {
-			pre: [{
-				method: handlers.users.verifyCredentials,
-				assign: 'user'
-			}],
+			pre: [
+				{
+					method: handlers.users.verifyCredentials,
+					assign: 'user'
+				}
+			],
 			// this handler will only be used if the pre condtions pass (aka credentials are verified)
 			handler: handlers.users.issueUserToken,
 			validate: {

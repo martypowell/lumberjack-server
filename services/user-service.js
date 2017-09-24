@@ -2,13 +2,7 @@
 
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
-const createToken = require('./token-service').createToken;
-
-function issueUserToken(email) {
-	let user = new User();
-	user.email = email;
-	return { id_token: createToken(user) };
-}
+const tokenService = require('./token-service');
 
 function createUser(email, password) {
 	return new Promise((resolve, reject) => {
@@ -27,16 +21,28 @@ function createUser(email, password) {
 				}
 				// If the user is saved successfully, issue a JWT
 				// res({ id_token: createToken(user) }).code(201);
-				return resolve({ id_token: createToken(savedUser) });
+				resolve(tokenService.issueToken(user));
 			});
+		});
+	});
+}
+
+function getUsers() {
+	return new Promise((resolve, reject) => {
+		return User.find({}, (err, users) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+			resolve(users);
 		});
 	});
 }
 
 function hashPassword(password, cb) {
 	// Generate a salt at level 10 strength
-	bcrypt.genSalt(10, (saltErr, salt) => {
-		bcrypt.hash(password, salt, (bcryptErr, hash) => {
+	return bcrypt.genSalt(10, (saltErr, salt) => {
+		return bcrypt.hash(password, salt, (bcryptErr, hash) => {
 			return cb(bcryptErr, hash);
 		});
 	});
@@ -66,7 +72,7 @@ function verifyCredentials(email, password) {
 	return new Promise((resolve, reject) => {
 		// Find an entry from the database that
 		// matches either the email or username
-		User.findOne({ email: email }, (dbErr, user) => {
+		return User.findOne({ email: email }, (dbErr, user) => {
 			if (dbErr) {
 				reject(dbErr);
 				return;
@@ -76,7 +82,6 @@ function verifyCredentials(email, password) {
 				resolve('Username or password is invalid');
 				return;
 			}
-
 			bcrypt.compare(password, user.password, (bcryptErr, isValid) => {
 				if (bcryptErr) {
 					reject(bcryptErr);
@@ -88,14 +93,13 @@ function verifyCredentials(email, password) {
 				}
 				resolve('Username or password is invalid');
 			});
-			resolve('Something went wrong, please contact support');
 		});
 	});
 }
 
 let userService = {
-	issueUserToken: issueUserToken,
 	createUser: createUser,
+	getUsers: getUsers,
 	hashPassword: hashPassword,
 	verifyCredentials: verifyCredentials,
 	verifyUniqueUser: verifyUniqueUser

@@ -20,10 +20,10 @@ server.register(require('hapi-auth-jwt'), (err) => {
 		key: secret,
 		verifyOptions: { algorithms: ['HS256'] }
 	});
+
+	server.route(routes);
 });
 
-// localhost:4000
-server.route(routes);
 server.start((err) => {
 	if (err) {
 		throw err;

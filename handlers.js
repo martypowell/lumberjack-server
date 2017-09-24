@@ -1,27 +1,28 @@
-var logService = require('./services/log-service');
-var userService = require('./services/user-service');
+const logService = require('./services/log-service');
+const userService = require('./services/user-service');
+const tokenService = require('./services/token-service');
 const Boom = require('boom');
 
 function getLogs(request, reply) {
 	let params = {};
-	let logs = logService.get(params);
+	const logs = logService.get(params);
 	reply(logs);
 }
 function saveLogs(request, reply) {
-	let requestBody = request.payload;
-	let log = logService.save(requestBody);
+	const requestBody = request.payload;
+	const log = logService.save(requestBody);
 	reply(log);
 }
 
 function createUser(request, reply) {
 	if (request.pre.isUserAvailable === false) {
-		var resStr = 'Email address has already been registered, please contact support if you own this email address.';
+		const resStr = 'Email address has already been registered, please contact support if you own this email address.';
 		reply(Boom.badRequest(resStr));
 		return;
 	}
 
-	let email = request.payload.email;
-	let password = request.payload.password;
+	const email = request.payload.email;
+	const password = request.payload.password;
 
 	userService.createUser(email, password)
 		.then(reply)
@@ -30,14 +31,22 @@ function createUser(request, reply) {
 		});
 }
 
+function getUsers(request, reply) {
+	userService.getUsers()
+		.then(reply)
+		.catch((err) => {
+			reply(Boom.badRequest(err));
+		});
+}
+
 function issueUserToken(request, reply) {
-	let email = request.payload.email;
-	let userToken = userService.issueUserToken(email);
+	const user = request.pre.user;
+	const userToken = tokenService.issueToken(user);
 	reply(userToken);
 }
 
 function verifyUniqueUser(request, reply) {
-	let email = request.payload.email;
+	const email = request.payload.email;
 	userService.verifyUniqueUser(email)
 		.then((isAvailable) => {
 			reply(isAvailable);
@@ -48,8 +57,8 @@ function verifyUniqueUser(request, reply) {
 }
 
 function verifyCredentials(request, reply) {
-	let email = request.payload.email;
-	let password = request.payload.password;
+	const email = request.payload.email;
+	const password = request.payload.password;
 	userService.verifyCredentials(email, password)
 		.then(reply)
 		.catch((err) => {
@@ -64,6 +73,7 @@ var logs = {
 
 var users = {
 	create: createUser,
+	get: getUsers,
 	issueUserToken: issueUserToken,
 	verifyCredentials: verifyCredentials,
 	verifyUniqueUser: verifyUniqueUser

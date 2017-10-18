@@ -1,8 +1,12 @@
 const handlers = require('./handlers.js');
 const createUserSchema = require('./schemas/validation/createUser');
 const authenticateUserSchema = require('./schemas/validation/authenticateUser');
+const Logger = require('./logger');
+
+const apiRoot = "/api";
 
 function rootRoute(request, reply) {
+	Logger.info('Logger is working: ' + request);
 	reply('Hapi World!');
 }
 
@@ -10,21 +14,28 @@ let routes = [
 	{
 		method: 'GET',
 		path: '/',
+		handler: function getIndex(request, reply) {
+			reply.view('index');
+		}
+	},
+	{
+		method: 'GET',
+		path: apiRoot + '/',
 		handler: rootRoute
 	},
 	{
 		method: 'GET',
-		path: '/logs',
+		path: apiRoot + '/logs',
 		handler: handlers.logs.get
 	},
 	{
 		method: 'POST',
-		path: '/logs',
+		path: apiRoot + '/logs',
 		handler: handlers.logs.save
 	},
 	{
 		method: 'GET',
-		path: '/users',
+		path: apiRoot + '/users',
 		config: {
 			handler: handlers.users.get,
 			auth: {
@@ -35,7 +46,7 @@ let routes = [
 	},
 	{
 		method: 'POST',
-		path: '/users',
+		path: apiRoot + '/users',
 		config: {
 			pre: [
 				{
@@ -51,7 +62,7 @@ let routes = [
 	},
 	{
 		method: 'POST',
-		path: '/users/authenticate',
+		path: apiRoot + '/users/authenticate',
 		config: {
 			pre: [
 				{

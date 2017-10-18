@@ -2,8 +2,10 @@ const logService = require('./services/log-service');
 const userService = require('./services/user-service');
 const tokenService = require('./services/token-service');
 const Boom = require('boom');
+const Logger = require('./logger');
 
 function getLogs(request, reply) {
+	Logger.info('Getting Logs Handler');
 	let params = {};
 	const logs = logService.get(params);
 	reply(logs);
@@ -15,20 +17,24 @@ function saveLogs(request, reply) {
 }
 
 function createUser(request, reply) {
-	if (request.pre.isUserAvailable === false) {
-		const resStr = 'Email address has already been registered, please contact support if you own this email address.';
-		reply(Boom.badRequest(resStr));
-		return;
+	try {
+		if (request.pre.isUserAvailable === false) {
+			const resStr = 'Email address has already been registered, please contact support if you own this email address.';
+			reply(Boom.badRequest(resStr));
+			return;
+		}
+
+		const email = request.payload.email;
+		const password = request.payload.password;
+
+		userService.createUser(email, password)
+			.then(reply)
+			.catch((err) => {
+				reply(Boom.badRequest(err));
+			});
+	} catch (err) {
+		Logger.error(err);
 	}
-
-	const email = request.payload.email;
-	const password = request.payload.password;
-
-	userService.createUser(email, password)
-		.then(reply)
-		.catch((err) => {
-			reply(Boom.badRequest(err));
-		});
 }
 
 function getUsers(request, reply) {

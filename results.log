@@ -1,0 +1,5 @@
+{"level":"info","message":"Logger is working: [object Object]","timestamp":"2017-10-09T14:11:10.419Z"}
+{"level":"info","message":"Logger is working: [object Object]","timestamp":"2017-10-09T14:12:29.568Z"}
+{"level":"info","message":"Got to the handler","timestamp":"2017-10-09T14:16:01.743Z"}
+{"level":"info","message":"Got to the handler","timestamp":"2017-10-09T14:16:30.025Z"}
+{"level":"info","message":"Got this far","timestamp":"2017-10-09T14:16:30.027Z"}

@@ -1,0 +1,23 @@
+version: "2"
+services:
+  lumberjack-server:
+    build:
+      context: .
+    ports:
+      - "3000:3000"
+    networks:
+      - lumberjack-network
+    # links:
+    #   - mongo
+
+  mongodb:
+    image: mongo
+    networks:
+      - lumberjack-network
+    # volumes:
+    #   - /data/db:/data/db
+    # ports:
+    #   - "27017:27017"
+networks:
+  lumberjack-network:
+    driver: bridge

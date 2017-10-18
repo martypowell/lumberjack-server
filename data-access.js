@@ -1,11 +1,14 @@
-var Mongoose = require('mongoose');
-var config = require('./config.js');
+const Mongoose = require('mongoose');
+const config = require('./config.js');
+const Logger = require('./logger');
 
-//load database
+// load database
 Mongoose.connect(config.development.dbConnectionStr);
-var db = Mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error'));
+const db = Mongoose.connection;
+db.on('error', function onError(err) {
+	Logger.error(err);
+});
 db.once('open', function callback() {
-    console.log('Connection with database succeeded.');
+	Logger.info('Connection with database succeeded.');
 });
 exports.db = db;

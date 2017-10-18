@@ -1,19 +1,25 @@
 const Hapi = require('hapi');
 const server = new Hapi.Server();
-const db = require('./data-access').db;
 const routes = require('./routes');
 const secret = require('./config').secret;
+const db = require('./data-access');
+const handlebars = require('handlebars');
+const vision = require('vision');
+const hapiAuthJwt = require('hapi-auth-jwt');
 
 // set the port of our application
 // process.env.PORT lets the port be set by Heroku
-var port = process.env.PORT || 8080;
+var port = process.env.PORT || 3000;
 
 server.connection({
 	host: '0.0.0.0',
 	port: port
 });
 
-server.register(require('hapi-auth-jwt'), (err) => {
+server.register([hapiAuthJwt, vision], (err) => {
+	if (err) {
+		throw err;
+	}
 	// We're giving the strategy both a name
 	// and scheme of 'jwt'
 	server.auth.strategy('jwt', 'jwt', {
@@ -22,6 +28,16 @@ server.register(require('hapi-auth-jwt'), (err) => {
 	});
 
 	server.route(routes);
+
+	server.views({
+		engines: {
+			html: handlebars
+		},
+		relativeTo: __dirname,
+		path: './public/templates',
+		layoutPath: './public/templates/layout',
+		helpersPath: './public/templates/helpers'
+	});
 });
 
 server.start((err) => {
